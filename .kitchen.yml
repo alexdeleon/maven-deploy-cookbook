@@ -1,0 +1,14 @@
+--- 
+driver: 
+  name: vagrant
+platforms: 
+  - 
+    name: centos-7.0
+provisioner: 
+  name: chef_solo
+suites: 
+  - 
+    attributes: 
+    name: default
+    run_list: 
+      - "recipe[maven_deploy::test_recipe]"

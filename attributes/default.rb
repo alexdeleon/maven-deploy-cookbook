@@ -1,0 +1,1 @@
+default[:maven_deploy][:repository] = "https://repo1.maven.org/maven2"
