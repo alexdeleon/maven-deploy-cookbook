@@ -123,4 +123,4 @@ end
 
 ## License and Authors
 
-Author:: Alexander De Leon (<@alexjdl>)
+Author:: Alexander De Leon (@alexjdl)
