@@ -22,7 +22,7 @@ action :create do
       if latest?(new_resource.version) || snapshot?(new_resource.version)
         repo_url[:snapshot]
       else
-        repo_url[:replease]
+        repo_url[:release]
       end
     end
     repo_url = repo_data[:url]
