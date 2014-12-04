@@ -36,9 +36,11 @@ class Chef
 
     	def get_actual_version(coordinates)
     		if latest?(coordinates[:version])
-    			version = REXML::Document.new(get_artifact_info(coordinates)).elements["//latest"].text
-                unless version
-                    version = REXML::Document.new(get_artifact_info(coordinates)).elements["//version[last()]"].text
+    			latestElement = REXML::Document.new(get_artifact_info(coordinates)).elements["//latest"]
+                version = if latestElement
+                    latestElement.text
+                else
+                    REXML::Document.new(get_artifact_info(coordinates)).elements["//version[last()]"].text
                 end
                 coordinates[:version] = version
     		end
