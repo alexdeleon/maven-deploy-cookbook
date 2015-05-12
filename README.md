@@ -1,106 +1,39 @@
 # maven_deploy cookbook
-
 Deploys artifacts from standard maven repositories
 
 ## Supported Platforms
-
-all
+All Platforms
 
 ## Attributes
+There are different configurations according to the defined attributes:
 
 ### Basic configuration
-<table>
-  <tr>
-    <th>Key</th>
-    <th>Type</th>
-    <th>Description</th>
-    <th>Default</th>
-  </tr>
-  <tr>
-    <td><tt>['maven_deploy']['repository']</tt></td>
-    <td>String</td>
-    <td>The URL of your maven repo</td>
-    <td><tt>true</tt></td>
-  </tr>
-</table>
+|Key|Description|Type|Default|
+|:-:|:--:|:---------:|:-----:|
+|['maven_deploy']['repositories']['repository']|The url of maven repository|String| * |
 
-### Repository with Auth configuration
-<table>
-  <tr>
-    <th>Key</th>
-    <th>Type</th>
-    <th>Description</th>
-    <th>Default</th>
-  </tr>
-  <tr>
-    <td><tt>['maven_deploy']['respository'][url]</tt></td>
-    <td>String</td>
-    <td>The URL of your maven repo</td>
-    <td><tt>true</tt></td>
-  </tr>
-  <tr>
-    <td><tt>['maven_deploy']['respository'][username]</tt></td>
-    <td>String</td>
-    <td>The username for authenticating with your maven repo</td>
-    <td><tt>true</tt></td>
-  </tr>
-  <tr>
-    <td><tt>['maven_deploy']['respository'][password]</tt></td>
-    <td>String</td>
-    <td>The username for authenticating with your maven repo</td>
-    <td><tt>true</tt></td>
-  </tr>
-</table>
+### Repository with auth configuration
+|Key|Description|Type|Default|
+|:-:|:--:|:---------:|:-----:|
+|['maven_deploy']['repositories']['repository'][url]|The url of maven repository|String| * |
+|['maven_deploy']['repositories']['repository'][username]|The username for authenticating with your maven repository|String| * |
+|['maven_deploy']['repositories']['repository'][password]|The password for authenticating with your maven repository|String| * |
 
-### Release/Snapshot repository configuration
-<table>
-  <tr>
-    <th>Key</th>
-    <th>Type</th>
-    <th>Description</th>
-    <th>Default</th>
-  </tr>
-  <tr>
-    <td><tt>['maven_deploy']['respository'][snapshot][url]</tt></td>
-    <td>String</td>
-    <td>The URL of your maven snaphot repo</td>
-    <td><tt>true</tt></td>
-  </tr>
-  <tr>
-    <td><tt>['maven_deploy']['respository'][snapshot][username]</tt></td>
-    <td>String</td>
-    <td>The username for authenticating with your snapshot maven repo</td>
-    <td><tt>true</tt></td>
-  </tr>
-  <tr>
-    <td><tt>['maven_deploy']['respository'][snapshot][password]</tt></td>
-    <td>String</td>
-    <td>The username for authenticating with your snapshot maven repo</td>
-    <td><tt>true</tt></td>
-  </tr>
-  <tr>
-    <td><tt>['maven_deploy']['respository'][snapshot][url]</tt></td>
-    <td>String</td>
-    <td>The URL of your maven snaphot repo</td>
-    <td><tt>true</tt></td>
-  </tr>
-  <tr>
-    <td><tt>['maven_deploy']['respository'][release][username]</tt></td>
-    <td>String</td>
-    <td>The username for authenticating with your release maven repo</td>
-    <td><tt>true</tt></td>
-  </tr>
-  <tr>
-    <td><tt>['maven_deploy']['respository'][snapshot][password]</tt></td>
-    <td>String</td>
-    <td>The username for authenticating with your release maven repo</td>
-    <td><tt>true</tt></td>
-  </tr>
-</table>
+### Release repository configuration
+|Key|Description|Type|Default|
+|:-:|:--:|:---------:|:-----:|
+|['maven_deploy']['repositories']['repository'][release][url]|The url of maven release repository|String| * |
+|['maven_deploy']['repositories']['repository'][release][username]|The username for authenticating with your maven release repository|String| * |
+|['maven_deploy']['repositories']['repository'][release][password]|The password for authenticating with your maven release repository|String| * |
 
+### Snapshot repository configuration
+|Key|Description|Type|Default|
+|:-:|:--:|:---------:|:-----:|
+|['maven_deploy']['repositories']['repository'][snapshot][url]|The url of maven snapshot repository|String| * |
+|['maven_deploy']['repositories']['repository'][snapshot][username]|The username for authenticating with your maven snapshot repository|String| * |
+|['maven_deploy']['repositories']['repository'][snapshot][password]|The password for authenticating with your maven snapshot repository|String| * |
 
 ## Usage
-
 In your recipe:
 
 ```ruby
@@ -113,7 +46,6 @@ end
 ```
 
 ## Contributing
-
 1. Fork the repository on Github
 2. Create a named feature branch (i.e. `add-new-recipe`)
 3. Write your change
