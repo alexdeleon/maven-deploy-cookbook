@@ -2,8 +2,9 @@ require 'net/http'
 require 'rexml/document'
 
 class Chef
+
   module Maven
-    
+
     def snapshot?(version)
         version.end_with? '-SNAPSHOT'
     end
@@ -14,7 +15,7 @@ class Chef
 
     class Repository
 
-        include Chef::Maven
+      include Chef::Maven
 
     	def initialize(repo_url, username = nil, password = nil)
         	@repo_url = repo_url
@@ -22,28 +23,31 @@ class Chef
         	@password = password
     	end
 
-    	def get_artifact(coordinates, dest)
-    		if  File.exist?(dest)
-                file_md5 = Digest::MD5.file(dest).hexdigest
-                md5 = get_artifact_md5(coordinates)
-                if(file_md5 === md5)
-                    return false
-                end
-            end
-            get build_uri(coordinates), dest
+      def artifact_updated?(coordinates, dest)
+        if  File.exist?(dest)
+          file_md5 = Digest::MD5.file(dest).hexdigest
+          md5 = get_artifact_md5(coordinates)
+          if(file_md5 === md5)
             return true
+          end
+        end
+        return false
+    	end
+
+    	def get_artifact(coordinates, dest)
+        return get build_uri(coordinates), dest
     	end
 
     	def get_actual_version(coordinates)
     		if latest?(coordinates[:version])
-    			latestElement = REXML::Document.new(get_artifact_info(coordinates)).elements["//latest"]
-                version = if latestElement
-                    latestElement.text
-                else
-                    REXML::Document.new(get_artifact_info(coordinates)).elements["//version[last()]"].text
-                end
-                coordinates[:version] = version
-    		end
+          latestElement = REXML::Document.new(get_artifact_info(coordinates)).elements["//latest"]
+          version = if latestElement
+            latestElement.text
+          else
+            REXML::Document.new(get_artifact_info(coordinates)).elements["//version[last()]"].text
+          end
+          coordinates[:version] = version
+        end
     	end
 
     	def get_build(coordinates)
@@ -65,55 +69,58 @@ class Chef
     		get(uri)
     	end
 
-        def get_artifact_md5(coordinates)
-            uri = build_uri(coordinates, :md5)
-            get(uri)
+      def get_artifact_md5(coordinates)
+        uri = build_uri(coordinates, :md5)
+        get(uri)
+      end
+
+      private  # ------------ helper methods ---- #
+
+      def build_uri(coordinates, type = :artifact)
+        case type
+        when :artifact_info
+          URI("#{@repo_url}/#{coordinates[:group_id].tr('\.','/')}/#{coordinates[:artifact_id]}/maven-metadata.xml")
+        when :version_info
+          URI("#{@repo_url}/#{coordinates[:group_id].tr('\.','/')}/#{coordinates[:artifact_id]}/#{coordinates[:version]}/maven-metadata.xml")
+        when :md5
+          get_build(coordinates) unless coordinates.has_key?(:build)
+          URI("#{@repo_url}/#{coordinates[:group_id].tr('\.','/')}/#{coordinates[:artifact_id]}/#{coordinates[:version]}/#{coordinates[:artifact_id]}-#{coordinates[:build]}#{coordinates[:classifier] ? '-'+coordinates[:classifier] : ''}.#{coordinates[:packaging]}.md5")
+        when :artifact
+          get_build(coordinates) unless coordinates.has_key?(:build)
+          URI("#{@repo_url}/#{coordinates[:group_id].tr('\.','/')}/#{coordinates[:artifact_id]}/#{coordinates[:version]}/#{coordinates[:artifact_id]}-#{coordinates[:build]}#{coordinates[:classifier] ? '-'+coordinates[:classifier] : ''}.#{coordinates[:packaging]}")
         end
+      end
 
-        private  # ------------ helper methods ---- #
+      def get(uri, dest = nil)
 
-    	def build_uri(coordinates, type = :artifact) 
-            case type 
-    		when :artifact_info 
-    			URI("#{@repo_url}/#{coordinates[:group_id].tr('\.','/')}/#{coordinates[:artifact_id]}/maven-metadata.xml")
-    		when :version_info
-    			URI("#{@repo_url}/#{coordinates[:group_id].tr('\.','/')}/#{coordinates[:artifact_id]}/#{coordinates[:version]}/maven-metadata.xml")
-    		when :md5
-                get_build(coordinates) unless coordinates.has_key?(:build)
-                URI("#{@repo_url}/#{coordinates[:group_id].tr('\.','/')}/#{coordinates[:artifact_id]}/#{coordinates[:version]}/#{coordinates[:artifact_id]}-#{coordinates[:build]}#{coordinates[:classifier] ? '-'+coordinates[:classifier] : ''}.#{coordinates[:packaging]}.md5")
-            when :artifact
-    			get_build(coordinates) unless coordinates.has_key?(:build)
-                URI("#{@repo_url}/#{coordinates[:group_id].tr('\.','/')}/#{coordinates[:artifact_id]}/#{coordinates[:version]}/#{coordinates[:artifact_id]}-#{coordinates[:build]}#{coordinates[:classifier] ? '-'+coordinates[:classifier] : ''}.#{coordinates[:packaging]}")
-    		end
-    	end
+        artifact_downloaded = false
+        Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
 
-    	def get(uri, dest = nil)
-    		puts "Dowloading #{uri}"
-	    	Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
+          request = Net::HTTP::Get.new uri.request_uri
+          request.basic_auth @username, @password if @username && @password
 
-			  request = Net::HTTP::Get.new uri.request_uri
-			  request.basic_auth @username, @password if @username && @password
-
-              if dest
-                begin
-                    file = open(dest, "wb") 
-                    http.request request do |response|
-                        response.read_body do |segment|
-                            file.write(segment)
-                        end
-                    end
-                rescue Exception => e
-                    Chef::Log.info "Failed to download from #{uri}: #{e}"
-                ensure
-                    file.close unless file.nil?
-                end                
-              else
-                response = http.request request
-                response.body
+          if dest
+            begin
+              file = open(dest, "wb")
+              http.request request do |response|
+                response.read_body do |segment|
+                  file.write(segment)
+                end
               end
-
-			end
-		end
+              artifact_downloaded = true
+            rescue Exception => e
+              Chef::Log.info "Failed to download from #{uri}: #{e}"
+            ensure
+              file.close unless file.nil?
+            end
+          else
+            response = http.request request
+            return response.body if response.is_a?(Net::HTTPSuccess)
+            raise # Exception launched to continue searching in the next repository
+          end
+        end
+        artifact_downloaded
+      end
     end
   end
 end
