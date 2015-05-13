@@ -22,9 +22,9 @@ action :create do
         repository
       else
         if latest?(new_resource.version) || snapshot?(new_resource.version)
-          repository[:snapshot]
+          repository[:snapshots]
         else
-          repository[:release]
+          repository[:releases]
         end
       end
       username = repo_data[:username]
@@ -35,23 +35,21 @@ action :create do
     end
 
     begin
-      
+
       Chef::Log.info "Trying to deploy #{ new_resource.name } from #{ repo_url }"
 
       repo = Repository.new repo_url, username, password
       coordinates = coordinate(new_resource)
 
-      artifact_update_required = repo.artifact_not_updated(coordinates, new_resource.deploy_to)
-
-      if artifact_update_required
-        if repo.get_artifact(coordinates, new_resource.deploy_to)
+      if not repo.artifact_updated?(coordinates, new_resource.deploy_to)
+        if not repo.get_artifact(coordinates, new_resource.deploy_to)
+          next # Cannot get the artifact from current repository, continue with the next repository
+        else
           artifact_updated = true
         end
       end
 
-      if not artifact_update_required || artifact_updated
-        break
-      end
+      break # Artifact updated, it's not necessary try with the other repositories
 
     rescue
       Chef::Log.info "Error when trying to deploy #{ new_resource.name } from #{ repo_url }"

@@ -23,15 +23,15 @@ class Chef
         	@password = password
     	end
 
-      def artifact_not_updated(coordinates, dest)
+      def artifact_updated?(coordinates, dest)
         if  File.exist?(dest)
           file_md5 = Digest::MD5.file(dest).hexdigest
           md5 = get_artifact_md5(coordinates)
           if(file_md5 === md5)
-            return false
+            return true
           end
         end
-        return true
+        return false
     	end
 
     	def get_artifact(coordinates, dest)

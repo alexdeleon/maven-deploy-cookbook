@@ -22,16 +22,16 @@ There are different configurations according to the defined attributes:
 ### Release repository configuration
 |Key|Description|Type|Default|
 |:-:|:--:|:---------:|:-----:|
-|['maven_deploy']['repositories']['repository'][release][url]|The url of maven release repository|String| * |
-|['maven_deploy']['repositories']['repository'][release][username]|The username for authenticating with your maven release repository|String| * |
-|['maven_deploy']['repositories']['repository'][release][password]|The password for authenticating with your maven release repository|String| * |
+|['maven_deploy']['repositories']['repository'][releases][url]|The url of maven release repository|String| * |
+|['maven_deploy']['repositories']['repository'][releases][username]|The username for authenticating with your maven release repository|String| * |
+|['maven_deploy']['repositories']['repository'][releases][password]|The password for authenticating with your maven release repository|String| * |
 
 ### Snapshot repository configuration
 |Key|Description|Type|Default|
 |:-:|:--:|:---------:|:-----:|
-|['maven_deploy']['repositories']['repository'][snapshot][url]|The url of maven snapshot repository|String| * |
-|['maven_deploy']['repositories']['repository'][snapshot][username]|The username for authenticating with your maven snapshot repository|String| * |
-|['maven_deploy']['repositories']['repository'][snapshot][password]|The password for authenticating with your maven snapshot repository|String| * |
+|['maven_deploy']['repositories']['repository'][snapshots][url]|The url of maven snapshot repository|String| * |
+|['maven_deploy']['repositories']['repository'][snapshots][username]|The username for authenticating with your maven snapshot repository|String| * |
+|['maven_deploy']['repositories']['repository'][snapshots][password]|The password for authenticating with your maven snapshot repository|String| * |
 
 ## Usage
 In your recipe:
@@ -53,6 +53,9 @@ end
 5. Run the tests, ensuring they all pass
 6. Submit a Pull Request
 
-## License and Authors
+## Authors and License
 
 Author:: Alexander De Leon (@alexjdl)
+Author:: Alberto J. Rubio  (@yebenes)
+
+Code released under [the MIT license](https://github.com/twbs/bootstrap/blob/master/LICENSE).
