@@ -100,25 +100,26 @@ class Chef
           request = Net::HTTP::Get.new uri.request_uri
           request.basic_auth @username, @password if @username && @password
 
-          response = http.request request
+          http.request request do |response|
 
-           # Exception launched to continue searching in the next repository
-          raise unless response.is_a?(Net::HTTPSuccess)
+             # Exception launched to continue searching in the next repository
+            raise unless response.is_a?(Net::HTTPSuccess)
 
-          if dest
-            begin
-              file = open(dest, "wb")
-              response.read_body do |segment|
-                file.write(segment)
+            if dest
+              begin
+                file = open(dest, "wb")
+                response.read_body do |segment|
+                  file.write(segment)
+                end
+                artifact_downloaded = true
+              rescue Exception => e
+                Chef::Log.info "Failed to download from #{uri}: #{e}"
+              ensure
+                file.close unless file.nil?
               end
-              artifact_downloaded = true
-            rescue Exception => e
-              Chef::Log.info "Failed to download from #{uri}: #{e}"
-            ensure
-              file.close unless file.nil?
+            else
+              return response.body
             end
-          else
-            return response.body
           end
           artifact_downloaded
         end
