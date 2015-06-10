@@ -74,7 +74,7 @@ class Chef
         get(uri)
       end
 
-      private  # ------------ helper methods ---- #
+      private  # ------------ Helper methods ------------ #
 
       def build_uri(coordinates, type = :artifact)
         case type
@@ -94,18 +94,22 @@ class Chef
       def get(uri, dest = nil)
 
         artifact_downloaded = false
+
         Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
 
           request = Net::HTTP::Get.new uri.request_uri
           request.basic_auth @username, @password if @username && @password
 
+          response = http.request request
+
+           # Exception launched to continue searching in the next repository
+          raise unless response.is_a?(Net::HTTPSuccess)
+
           if dest
             begin
               file = open(dest, "wb")
-              http.request request do |response|
-                response.read_body do |segment|
-                  file.write(segment)
-                end
+              response.read_body do |segment|
+                file.write(segment)
               end
               artifact_downloaded = true
             rescue Exception => e
@@ -114,12 +118,10 @@ class Chef
               file.close unless file.nil?
             end
           else
-            response = http.request request
-            return response.body if response.is_a?(Net::HTTPSuccess)
-            raise # Exception launched to continue searching in the next repository
+            return response.body
           end
+          artifact_downloaded
         end
-        artifact_downloaded
       end
     end
   end
