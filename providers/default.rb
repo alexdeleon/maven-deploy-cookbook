@@ -6,7 +6,8 @@ def coordinate(resource)
     :artifact_id => resource.artifact_id,
     :version => resource.version,
     :classifier => resource.classifier,
-    :packaging => resource.packaging
+    :packaging => resource.packaging,
+    :useMavenMetadata => resource.useMavenMetadata
   }
 end
 
@@ -51,8 +52,8 @@ action :create do
 
       break # Artifact updated, it's not necessary try with the other repositories
 
-    rescue
-      Chef::Log.info "Error when trying to deploy #{ new_resource.name } from #{ repo_url }"
+    rescue Exception => e
+      Chef::Log.info "Error when trying to deploy #{ new_resource.name } from #{ repo_url }: #{e.message}"
     end
   end
   new_resource.updated_by_last_action(artifact_updated)

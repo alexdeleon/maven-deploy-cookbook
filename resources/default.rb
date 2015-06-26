@@ -10,5 +10,6 @@ attribute :group_id, :kind_of => String, :required => true
 attribute :version, :kind_of => String, :required => true
 attribute :classifier, :kind_of => String
 attribute :packaging, :kind_of => String, :default => 'jar'
+attribute :useMavenMetadata, :kind_of => [TrueClass, FalseClass], :default => true
 
 attr_accessor :exists

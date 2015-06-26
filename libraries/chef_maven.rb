@@ -51,12 +51,16 @@ class Chef
     	end
 
     	def get_build(coordinates)
-    		get_actual_version(coordinates)
-    		coordinates[:build] = if snapshot?(coordinates[:version])
-    			REXML::Document.new(get_version_info(coordinates)).elements["//extension[text()='#{coordinates[:packaging]}']/../value"].text
-    		else
-    			coordinates[:version]
-    		end
+        if(coordinates[:useMavenMetadata])
+          get_actual_version(coordinates)
+      		coordinates[:build] = if snapshot?(coordinates[:version])
+      			REXML::Document.new(get_version_info(coordinates)).elements["//extension[text()='#{coordinates[:packaging]}']/../value"].text
+      		else
+      			coordinates[:version]
+      		end
+        else
+          coordinates[:build] = coordinates[:version]
+        end
     	end
 
     	def get_artifact_info(coordinates)
@@ -84,10 +88,10 @@ class Chef
           URI("#{@repo_url}/#{coordinates[:group_id].tr('\.','/')}/#{coordinates[:artifact_id]}/#{coordinates[:version]}/maven-metadata.xml")
         when :md5
           get_build(coordinates) unless coordinates.has_key?(:build)
-          URI("#{@repo_url}/#{coordinates[:group_id].tr('\.','/')}/#{coordinates[:artifact_id]}/#{coordinates[:version]}/#{coordinates[:artifact_id]}-#{coordinates[:build]}#{coordinates[:classifier] ? '-'+coordinates[:classifier] : ''}.#{coordinates[:packaging]}.md5")
+          URI("#{@repo_url}/#{coordinates[:group_id].tr('\.','/')}/#{coordinates[:artifact_id]}/#{coordinates[:version]}/#{coordinates[:artifact_id]}#{coordinates[:build] ? '-'+coordinates[:build] : ''}#{coordinates[:classifier] ? '-'+coordinates[:classifier] : ''}.#{coordinates[:packaging]}.md5")
         when :artifact
           get_build(coordinates) unless coordinates.has_key?(:build)
-          URI("#{@repo_url}/#{coordinates[:group_id].tr('\.','/')}/#{coordinates[:artifact_id]}/#{coordinates[:version]}/#{coordinates[:artifact_id]}-#{coordinates[:build]}#{coordinates[:classifier] ? '-'+coordinates[:classifier] : ''}.#{coordinates[:packaging]}")
+          URI("#{@repo_url}/#{coordinates[:group_id].tr('\.','/')}/#{coordinates[:artifact_id]}/#{coordinates[:version]}/#{coordinates[:artifact_id]}#{coordinates[:build] ? '-'+coordinates[:build] : ''}#{coordinates[:classifier] ? '-'+coordinates[:classifier] : ''}.#{coordinates[:packaging]}")
         end
       end
 
