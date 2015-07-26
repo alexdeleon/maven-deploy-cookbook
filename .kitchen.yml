@@ -13,3 +13,13 @@ suites:
           central: "https://repo1.maven.org/maven2"
     run_list:
       - "recipe[maven_deploy::test_recipe]"
+
+  - name: no_repository_data
+    attributes:
+      maven_deploy:
+        repositories:
+          central:
+            snapshots:
+              url: "https://repo1.maven.org/maven2"
+    run_list:
+      - "recipe[maven_deploy::test_recipe]"

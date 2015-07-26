@@ -14,47 +14,57 @@ end
 action :create do
 
   repositories = node[:maven_deploy][:repositories]
-  artifact_updated = false
+  ok = false
 
   repositories.each do | key, repository |
-    username = nil, password = nil
-    repo_url = if repository.is_a?(Hash)
-      repo_data = if repository.has_key?(:url)
-        repository
-      else
-        if latest?(new_resource.version) || snapshot?(new_resource.version)
-          repository[:snapshots]
-        else
-          repository[:releases]
-        end
-      end
-      username = repo_data[:username]
-      password = repo_data[:password]
-      repo_data[:url]
-    else
+    ok = deploy(coordinate(new_resource), repository, new_resource.deploy_to)
+    break if ok
+  end
+
+  if not ok then
+    raise "Not found artifact #{ new_resource.name } in any of the provided repositories"
+  end
+end
+
+# Returns true if artifact was correctly downloaded from repository
+def deploy(coordinates, repository, deploy_to)
+  username = nil, password = nil
+  repo_url = if repository.is_a?(Hash)
+    repo_data = if repository.has_key?(:url)
       repository
+    else
+      if latest?(coordinates[:version]) || snapshot?(coordinates[:version])
+        repository[:snapshots]
+      else
+        repository[:releases]
+      end
+    end
+    if repo_data.nil?
+      return false
+    end
+    username = repo_data[:username]
+    password = repo_data[:password]
+    repo_data[:url]
+  else
+    repository
+  end
+
+  begin
+
+    Chef::Log.info "Trying to deploy #{ new_resource.name } from #{ repo_url }"
+
+    repo = Repository.new repo_url, username, password
+
+    if not repo.artifact_updated?(coordinates, deploy_to)
+      if repo.get_artifact(coordinates, deploy_to)
+        new_resource.updated_by_last_action(true)
+      end
     end
 
-    begin
-
-      Chef::Log.info "Trying to deploy #{ new_resource.name } from #{ repo_url }"
-
-      repo = Repository.new repo_url, username, password
-      coordinates = coordinate(new_resource)
-
-      if not repo.artifact_updated?(coordinates, new_resource.deploy_to)
-        if not repo.get_artifact(coordinates, new_resource.deploy_to)
-          next # Cannot get the artifact from current repository, continue with the next repository
-        else
-          artifact_updated = true
-        end
-      end
-
-      break # Artifact updated, it's not necessary try with the other repositories
 
     rescue Exception => e
       Chef::Log.info "Error when trying to deploy #{ new_resource.name } from #{ repo_url }: #{e.message}"
-    end
+      return false
   end
-  new_resource.updated_by_last_action(artifact_updated)
+  return true
 end
