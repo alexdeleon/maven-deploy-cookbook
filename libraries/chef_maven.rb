@@ -50,11 +50,33 @@ class Chef
         end
     	end
 
+        def get_build_file_name(coordinates)
+          # attempt to deploy a snapshot submodule
+          ret = nil
+          xml = REXML::Document.new(get_version_info(coordinates))
+          node = xml.elements["//extension[text()='#{coordinates[:packaging]}']/../value"]
+
+          # attempt to deploy a primary snapshot module
+          if node.nil?
+            timestamp = xml.elements['/metadata/versioning/snapshot/timestamp']
+            build_number = xml.elements['/metadata/versioning/snapshot/buildNumber']
+
+            unless timestamp.nil? || build_number.nil?
+                ret = "#{coordinates[:version].slice(0, coordinates[:version].rindex('-SNAPSHOT'))}-#{timestamp.text}-#{build_number.text}"
+            end
+          else
+              ret = node.text
+          end
+
+          Chef::Log.debug("Build file name is #{ret}")
+          ret
+        end
+
     	def get_build(coordinates)
         if(coordinates[:useMavenMetadata])
           get_actual_version(coordinates)
       		coordinates[:build] = if snapshot?(coordinates[:version])
-      			REXML::Document.new(get_version_info(coordinates)).elements["//extension[text()='#{coordinates[:packaging]}']/../value"].text
+                  get_build_file_name(coordinates)
       		else
       			coordinates[:version]
       		end
