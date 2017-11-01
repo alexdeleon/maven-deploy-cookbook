@@ -58,6 +58,12 @@ def deploy(coordinates, repository, deploy_to)
     if not repo.artifact_updated?(coordinates, deploy_to)
       if repo.get_artifact(coordinates, deploy_to)
         new_resource.updated_by_last_action(true)
+        if new_resource.validate_checksum
+          if not repo.artifact_updated?(coordinates, deploy_to)
+            Chef::Log.error 'Checksum error!!'
+            raise Exception('Checksum error!!!')
+          end
+        end
       end
     end
 

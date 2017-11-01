@@ -1,0 +1,6 @@
+name: maven_deploy
+title: maven_deploy tests
+version: 0.0.1
+supports:
+  - os-family: unix
+  - inspec: '~> 1.0'
