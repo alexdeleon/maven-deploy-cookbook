@@ -11,5 +11,6 @@ attribute :version, :kind_of => String, :required => true
 attribute :classifier, :kind_of => String
 attribute :packaging, :kind_of => String, :default => 'jar'
 attribute :useMavenMetadata, :kind_of => [TrueClass, FalseClass], :default => true
+attribute :validate_checksum, :kind_of => [TrueClass, FalseClass], :default => false
 
 attr_accessor :exists
